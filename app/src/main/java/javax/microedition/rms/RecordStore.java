@@ -1,5 +1,6 @@
 package javax.microedition.rms;
 
+import android.util.Log;
 import javax.microedition.lcdui.ResourceLoader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class RecordStore {
+    private static final String TAG = "RMS";
     private String name;
     private ArrayList<byte[]> records = new ArrayList<>();
     private File storeDir;
@@ -21,21 +23,26 @@ public class RecordStore {
 
     private static File getBaseDir() {
         if (ResourceLoader.appContext != null) {
-            return new File(ResourceLoader.appContext.getFilesDir(), "rms");
+            File dir = new File(ResourceLoader.appContext.getFilesDir(), "rms");
+            if (!dir.exists()) dir.mkdirs();
+            return dir;
         }
-        return new File("/data/data/com.gameloft.earthwormjim/files", "rms");
+        File fallback = new File("/data/data/com.gameloft.theavengers/files", "rms");
+        if (!fallback.exists()) fallback.mkdirs();
+        return fallback;
     }
 
     public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary) throws RecordStoreException {
         File baseDir = getBaseDir();
         File storeDir = new File(baseDir, recordStoreName);
-        boolean exists = storeDir.exists() && new File(storeDir, "1.rec").exists();
+        boolean exists = storeDir.exists();
         if (!exists) {
             if (!createIfNecessary) {
                 throw new RecordStoreNotFoundException("Record store not found: " + recordStoreName);
             }
             storeDir.mkdirs();
         }
+        Log.i(TAG, "openRecordStore: " + recordStoreName + ", exists=" + exists);
         return new RecordStore(recordStoreName, storeDir);
     }
 
@@ -61,10 +68,12 @@ public class RecordStore {
             }
             id++;
         }
+        Log.i(TAG, "Loaded " + records.size() + " records from " + name);
     }
 
     public void closeRecordStore() throws RecordStoreException {
         open = false;
+        Log.i(TAG, "closeRecordStore: " + name);
     }
 
     public int getNumRecords() {
@@ -98,6 +107,7 @@ public class RecordStore {
         }
         records.set(idx, copy);
         saveRecordFile(recordId, copy);
+        Log.i(TAG, "setRecord in " + name + ": id=" + recordId + ", bytes=" + numBytes);
     }
 
     public int addRecord(byte[] data, int offset, int numBytes) throws RecordStoreException {
@@ -108,6 +118,7 @@ public class RecordStore {
         records.add(copy);
         int newId = records.size();
         saveRecordFile(newId, copy);
+        Log.i(TAG, "addRecord in " + name + ": id=" + newId + ", bytes=" + numBytes);
         return newId;
     }
 
@@ -117,8 +128,26 @@ public class RecordStore {
             File f = new File(storeDir, recordId + ".rec");
             FileOutputStream fos = new FileOutputStream(f);
             fos.write(data);
+            fos.flush();
             fos.close();
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            Log.e(TAG, "Error saving record " + recordId + " in " + name, e);
+        }
+    }
+
+    public static String[] listRecordStores() {
+        File baseDir = getBaseDir();
+        if (!baseDir.exists()) return null;
+        File[] files = baseDir.listFiles();
+        if (files == null || files.length == 0) return null;
+        ArrayList<String> list = new ArrayList<>();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                list.add(f.getName());
+            }
+        }
+        if (list.isEmpty()) return null;
+        return list.toArray(new String[0]);
     }
 
     public static void deleteRecordStore(String recordStoreName) throws RecordStoreException {
@@ -130,6 +159,7 @@ public class RecordStore {
                 for (File f : files) f.delete();
             }
             storeDir.delete();
+            Log.i(TAG, "deleteRecordStore: " + recordStoreName);
         }
     }
 }
