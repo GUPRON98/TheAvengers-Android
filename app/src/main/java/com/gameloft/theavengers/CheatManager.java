@@ -1,84 +1,122 @@
 package com.gameloft.theavengers;
 
 import android.util.Log;
+import java.lang.reflect.Field;
 
 public class CheatManager {
     private static final String TAG = "AvengersCheats";
 
     public static volatile boolean godMode = false;
 
+    private static Field fieldPlayer;
+    private static Field fieldW;
+    private static Field fieldX;
+    private static Field fieldLives;
+    private static boolean reflectionInit = false;
+
+    private static void initReflection() {
+        if (reflectionInit) return;
+        reflectionInit = true;
+        try {
+            Class<?> clsG = Class.forName("g");
+            for (Field f : clsG.getDeclaredFields()) {
+                if (f.getName().equals("d") && f.getType().getName().equals("f")) {
+                    f.setAccessible(true);
+                    fieldPlayer = f;
+                    break;
+                }
+            }
+            Class<?> clsF = Class.forName("f");
+            for (Field f : clsF.getDeclaredFields()) {
+                if (f.getName().equals("W") && f.getType() == int.class) {
+                    f.setAccessible(true);
+                    fieldW = f;
+                } else if (f.getName().equals("X") && f.getType() == int.class) {
+                    f.setAccessible(true);
+                    fieldX = f;
+                } else if (f.getName().equals("aD") && f.getType() == int.class) {
+                    f.setAccessible(true);
+                    fieldLives = f;
+                }
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error initializing reflection", t);
+        }
+    }
+
     public static boolean toggleGodMode() {
+        initReflection();
         godMode = !godMode;
         if (godMode) {
-            applyFullHealth();
+            applyFullHealth(true);
+            applyMaxLives();
         }
+        Log.i(TAG, "Cheats: God Mode toggled -> " + godMode);
         return godMode;
     }
 
     public static void applyMaxLives() {
+        initReflection();
         try {
-            Class<?> clsF = Class.forName("f");
-            java.lang.reflect.Field fAD = clsF.getDeclaredField("aD");
-            fAD.setAccessible(true);
-            fAD.setInt(null, 99);
-            Log.i(TAG, "Cheats: 99 Lives applied to f.aD");
+            if (fieldLives != null) {
+                fieldLives.setInt(null, 99);
+                Log.i(TAG, "Cheats: 99 Lives applied to f.aD");
+            }
         } catch (Throwable t) {
             Log.e(TAG, "Error applying 99 Lives", t);
         }
     }
 
     public static void applyFullHealth() {
+        applyFullHealth(true);
+    }
+
+    public static void applyFullHealth(boolean log) {
+        initReflection();
         try {
-            Class<?> clsG = Class.forName("g");
-            Class<?> clsF = Class.forName("f");
-            java.lang.reflect.Field fD = clsG.getDeclaredField("d");
-            fD.setAccessible(true);
-            Object player = fD.get(null);
-            if (player != null) {
-                java.lang.reflect.Field fW = clsF.getDeclaredField("W");
-                java.lang.reflect.Field fX = clsF.getDeclaredField("X");
-                fW.setAccessible(true);
-                fX.setAccessible(true);
-                int maxX = fX.getInt(player);
-                if (maxX <= 0) maxX = 1000;
-                fW.setInt(player, maxX);
-                Log.i(TAG, "Cheats: 100% Health refilled (W = " + maxX + ")");
+            if (fieldPlayer != null && fieldW != null && fieldX != null) {
+                Object player = fieldPlayer.get(null);
+                if (player != null) {
+                    int max = fieldX.getInt(player);
+                    if (max <= 0) max = 1000;
+                    fieldW.setInt(player, max);
+                    if (log) {
+                        Log.i(TAG, "Cheats: 100% Health refilled (W = " + max + ")");
+                    }
+                }
             }
         } catch (Throwable t) {
-            Log.e(TAG, "Error refilling health", t);
+            if (log) Log.e(TAG, "Error refilling health", t);
         }
     }
 
     public static void applyAvengersAssemble() {
         godMode = true;
         applyMaxLives();
-        applyFullHealth();
+        applyFullHealth(true);
         Log.i(TAG, "Cheats: AVENGERS ASSEMBLE (ALL CHEATS ACTIVATED)!");
     }
 
-    // Called on each frame loop to lock god mode
     public static void tick() {
         if (!godMode) return;
+        initReflection();
         try {
-            Class<?> clsF = Class.forName("f");
-            // Set engine invulnerability flag
-            java.lang.reflect.Field fS = clsF.getDeclaredField("s");
-            fS.setAccessible(true);
-            fS.setBoolean(null, true);
-
-            // Refill player health
-            Class<?> clsG = Class.forName("g");
-            java.lang.reflect.Field fD = clsG.getDeclaredField("d");
-            fD.setAccessible(true);
-            Object player = fD.get(null);
-            if (player != null) {
-                java.lang.reflect.Field fW = clsF.getDeclaredField("W");
-                java.lang.reflect.Field fX = clsF.getDeclaredField("X");
-                fW.setAccessible(true);
-                fX.setAccessible(true);
-                int maxX = fX.getInt(player);
-                if (maxX <= 0) maxX = 1000;
-                fW.setInt(player, maxX);
+            if (fieldPlayer != null && fieldW != null && fieldX != null) {
+                Object player = fieldPlayer.get(null);
+                if (player != null) {
+                    int max = fieldX.getInt(player);
+                    if (max <= 0) max = 1000;
+                    int cur = fieldW.getInt(player);
+                    if (cur < max) {
+                        fieldW.setInt(player, max);
+                    }
+                }
+            }
+            if (fieldLives != null) {
+                int curLives = fieldLives.getInt(null);
+                if (curLives < 10) {
+                    fieldLives.setInt(null, 99);
+                }
             }
         } catch (Throwable ignored) {}
     }

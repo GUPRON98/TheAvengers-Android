@@ -108,6 +108,7 @@ public abstract class Canvas extends Displayable {
 
     public void serviceRepaints() {
         if (backBitmap != null && displayGraphics != null) {
+            displayGraphics.reset(getWidth(), getHeight());
             try {
                 paint(displayGraphics);
             } catch (Throwable t) {

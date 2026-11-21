@@ -84,6 +84,11 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         hideSystemUI();
+        if (midlet != null) {
+            try {
+                midlet.getClass().getMethod("startApp").invoke(midlet);
+            } catch (Throwable ignored) {}
+        }
     }
 
     @Override
@@ -370,11 +375,12 @@ public class MainActivity extends Activity {
             drawMatrix.postScale(rectGame.width() / 800f, rectGame.height() / 480f);
             drawMatrix.postTranslate(rectGame.left, rectGame.top);
 
-            // In-Game Setting / Cheat floating pill button (Top Right)
-            float btnW = 135f;
-            float btnH = 44f;
-            float pad = 16f;
-            rectSettingBtn.set(w - btnW - pad, pad, w - pad, pad + btnH);
+            // In-Game Setting / Cheat floating pill button (Bottom Center)
+            float btnW = 140f;
+            float btnH = 38f;
+            float padBottom = 10f;
+            float btnLeft = (w - btnW) / 2f;
+            rectSettingBtn.set(btnLeft, h - btnH - padBottom, btnLeft + btnW, h - padBottom);
 
             // Modal Layout
             float mw = Math.min(w * 0.88f, 660f);

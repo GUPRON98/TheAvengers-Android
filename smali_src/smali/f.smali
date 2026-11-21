@@ -12253,11 +12253,24 @@
 
     sput-boolean v1, Lf;->h:Z
 
+    sget-boolean v2, Lcom/gameloft/theavengers/CheatManager;->godMode:Z
+
+    if-eqz v2, :cond_sub_lives
+
+    const/16 v2, 0x63
+
+    sput v2, Lf;->aD:I
+
+    goto :goto_lives_done
+
+    :cond_sub_lives
     sget v2, Lf;->aD:I
 
     sub-int/2addr v2, v0
 
     sput v2, Lf;->aD:I
+
+    :goto_lives_done
 
     sget v2, Lg;->au:I
 

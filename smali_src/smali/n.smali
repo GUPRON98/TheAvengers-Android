@@ -1323,37 +1323,13 @@
 
     invoke-direct {p0, v0, v1, v2}, Ljava/io/ByteArrayInputStream;-><init>([BII)V
 
-    goto :goto_0
+    return-object p0
 
     :cond_0
-    sget v0, Ln;->J:I
-
-    const/4 v1, 0x2
-
-    if-eq v0, v1, :cond_1
-
-    sget v0, Ln;->J:I
-
-    const/4 v1, 0x1
-
-    if-ne v0, v1, :cond_1
-
-    const-string v0, ""
-
-    invoke-virtual {v0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-
-    move-result-object v0
-
-    invoke-virtual {v0, p0}, Ljava/lang/Class;->getResourceAsStream(Ljava/lang/String;)Ljava/io/InputStream;
+    invoke-static {p0}, Ljavax/microedition/lcdui/ResourceLoader;->open(Ljava/lang/String;)Ljava/io/InputStream;
 
     move-result-object p0
 
-    goto :goto_0
-
-    :cond_1
-    const/4 p0, 0x0
-
-    :goto_0
     return-object p0
 .end method
 
@@ -13527,9 +13503,7 @@
     :catch_0
     move-exception p1
 
-    const/4 p1, -0x1
-
-    sput p1, Ln;->m:I
+    invoke-virtual {p1}, Ljava/lang/Throwable;->printStackTrace()V
 
     :goto_5
     sput-boolean v1, Ln;->a:Z
@@ -13687,9 +13661,11 @@
     :catch_0
     move-exception v0
 
-    const/4 v0, -0x1
+    invoke-virtual {v0}, Ljava/lang/Throwable;->printStackTrace()V
 
-    sput v0, Ln;->m:I
+    const/4 v0, 0x0
+
+    goto :goto_0
 
     :cond_1
     const/4 v0, 0x0

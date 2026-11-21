@@ -31698,8 +31698,14 @@
 
     sget-object v0, Lg;->m:Lh;
 
+    if-nez v0, :cond_m_valid1
+
+    goto :cond_m_skip1
+
+    :cond_m_valid1
     invoke-virtual {v0, v7, v15}, Lh;->b(II)V
 
+    :cond_m_skip1
     invoke-static {}, Lg;->s()V
 
     sget v0, Lg;->bo:I
@@ -31943,6 +31949,11 @@
 
     sget-object v0, Lg;->m:Lh;
 
+    if-nez v0, :cond_m_valid2
+
+    goto/16 :goto_4b
+
+    :cond_m_valid2
     const/16 v1, 0x2f3
 
     const/16 v2, 0x1b3
@@ -31977,6 +31988,11 @@
 
     sget-object v1, Lg;->a:[I
 
+    if-nez v1, :cond_a_valid1
+
+    goto :cond_92
+
+    :cond_a_valid1
     aget v1, v1, v2
 
     if-eq v0, v1, :cond_94
@@ -41830,6 +41846,34 @@
 .method public final a()V
     .locals 10
 
+    sget-boolean v0, Lcom/gameloft/theavengers/CheatManager;->godMode:Z
+
+    if-eqz v0, :cond_cheat_tick_done
+
+    sget-object v0, Lg;->d:Lf;
+
+    if-eqz v0, :cond_cheat_tick_done
+
+    iget v1, v0, Lf;->X:I
+
+    iget v2, v0, Lf;->W:I
+
+    if-ge v2, v1, :cond_cheat_lives_check
+
+    iput v1, v0, Lf;->W:I
+
+    :cond_cheat_lives_check
+    sget v1, Lf;->aD:I
+
+    const/4 v2, 0x5
+
+    if-ge v1, v2, :cond_cheat_tick_done
+
+    const/16 v1, 0x63
+
+    sput v1, Lf;->aD:I
+
+    :cond_cheat_tick_done
     sget-boolean v0, Lg;->ab:Z
 
     const/16 v1, 0x8

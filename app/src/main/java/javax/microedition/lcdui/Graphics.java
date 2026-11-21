@@ -66,6 +66,12 @@ public class Graphics {
         return canvas;
     }
 
+    public void reset(int width, int height) {
+        this.transX = 0;
+        this.transY = 0;
+        this.clipRect.set(0, 0, width, height);
+    }
+
     public void translate(int x, int y) {
         this.transX += x;
         this.transY += y;

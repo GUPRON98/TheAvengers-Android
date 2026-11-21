@@ -996,13 +996,7 @@
 .method private static a(Ljava/lang/String;)Ljava/io/InputStream;
     .locals 1
 
-    const-string v0, "a"
-
-    invoke-virtual {v0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
-
-    move-result-object v0
-
-    invoke-virtual {v0, p0}, Ljava/lang/Class;->getResourceAsStream(Ljava/lang/String;)Ljava/io/InputStream;
+    invoke-static {p0}, Ljavax/microedition/lcdui/ResourceLoader;->open(Ljava/lang/String;)Ljava/io/InputStream;
 
     move-result-object p0
 

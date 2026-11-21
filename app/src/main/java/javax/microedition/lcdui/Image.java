@@ -71,4 +71,13 @@ public class Image {
         }
         return graphics;
     }
+
+    public void getRGB(int[] rgbData, int offset, int scanlength, int x, int y, int width, int height) {
+        if (bitmap == null || rgbData == null) return;
+        try {
+            bitmap.getPixels(rgbData, offset, scanlength, x, y, width, height);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
 }
